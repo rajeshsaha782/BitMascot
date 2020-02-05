@@ -80,7 +80,7 @@ public class Main {
                 DocumentBuilder db = dbf.newDocumentBuilder();
                 Document doc = db.parse(file);
                 NodeList itemList = doc.getElementsByTagName("item");
-                System.out.println();
+//                System.out.println();
                 for (int i = 0; i < itemList.getLength(); i++) {
                     Element item = (Element) itemList.item(i);
                     NodeList mediaGroup = item.getElementsByTagName("media:group").item(0).getChildNodes();
