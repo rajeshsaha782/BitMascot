@@ -6,32 +6,37 @@ import com.gargoylesoftware.htmlunit.WebClient;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import util.Helper;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ScrapeHelperService {
 
     private static ScrapeHelperService scrapeHelperServiceInstance = null;
-    private ScrapeHelperService(){
+
+    private ScrapeHelperService() {
     }
-    public static ScrapeHelperService getInstance()
-    {
+
+    public static ScrapeHelperService getInstance() {
         if (scrapeHelperServiceInstance == null)
             scrapeHelperServiceInstance = new ScrapeHelperService();
         return scrapeHelperServiceInstance;
     }
 
-    public void fetchRss() {
-        System.out.println("Fetching RSS...");
+    public void fetchRss(String sourceUrl, String destinationPath) {
+        Instant start = Instant.now();
+        System.out.println("Fetching RSS..." + sourceUrl);
 //        try {
 //            ScrapeHelper scrapeHelper = new ScrapeHelper();
 //            WebClient webClient = scrapeHelper.getWebClient();
@@ -45,8 +50,8 @@ public class ScrapeHelperService {
 //        }
 
         try {
-            BufferedInputStream in = new BufferedInputStream(new URL("http://rss.cnn.com/rss/edition.rss").openStream());
-            FileOutputStream fileOutputStream = new FileOutputStream("src/main/resources/a.rss");
+            BufferedInputStream in = new BufferedInputStream(new URL(sourceUrl).openStream());
+            FileOutputStream fileOutputStream = new FileOutputStream(destinationPath);
             byte dataBuffer[] = new byte[1024];
             int bytesRead;
             while ((bytesRead = in.read(dataBuffer, 0, 1024)) != -1) {
@@ -55,23 +60,26 @@ public class ScrapeHelperService {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            System.out.println("Fetching RSS Done...");
+            Instant end = Instant.now();
+            Duration timeElapsed = Duration.between(start, end);
+            System.out.println("Fetch Time taken: " + timeElapsed.toMillis() + " milliseconds");
+            System.out.println("Fetching RSS is done in " + destinationPath + "\n");
         }
 
     }
 
-    public void parseImageFromRss() {
+    public void parseImageFromRss(String sourcePath, String destinationPath) {
         System.out.println("Parsing Image From RSS...");
         Instant start = Instant.now();
+        StringBuilder images = new StringBuilder();
         int totalImages = 0;
         try {
-            File file = new File("src/main/resources/a.rss");
+            File file = new File(sourcePath);
             if (file.exists()) {
                 DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
                 DocumentBuilder db = dbf.newDocumentBuilder();
                 Document doc = db.parse(file);
                 NodeList itemList = doc.getElementsByTagName("item");
-//                System.out.println();
                 for (int i = 0; i < itemList.getLength(); i++) {
 //                    System.out.println("item: " + i);
                     Element item = (Element) itemList.item(i);
@@ -80,20 +88,33 @@ public class ScrapeHelperService {
                     if (mediaGroup.getLength() > 0) {
                         mediaGroup = item.getElementsByTagName("media:group").item(0).getChildNodes();
                         for (int m = 0; m < mediaGroup.getLength(); m++) {
-                            System.out.println(mediaGroup.item(m).getAttributes().item(3).getTextContent());
+//                            System.out.println(mediaGroup.item(m).getAttributes().item(3).getTextContent());
+                            images.append(mediaGroup.item(m).getAttributes().item(3).getTextContent()).append("\n");
                             totalImages++;
                         }
                     }
                 }
+            } else {
+                System.out.println(sourcePath + " File not found!!");
             }
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
+            try {
+//                System.out.println(images.toString());
+                System.out.println("Updating image at " + new Date() + " in " + destinationPath);
+                images.append("\n\nLast Updated: ").append(new Date().toString());
+                Helper helper = Helper.getInstance();
+                helper.fileWriter(destinationPath, images.toString());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
             Instant end = Instant.now();
             Duration timeElapsed = Duration.between(start, end);
             System.out.println("Total Images: " + totalImages);
-            System.out.println("Time taken: " + timeElapsed.toMillis() + " milliseconds");
-            System.out.println("Parsing Image From RSS Done...");
+            System.out.println("Parsing Image Time taken: " + timeElapsed.toMillis() + " milliseconds");
+            System.out.println("Parsing Image From RSS is done in "+ destinationPath + "\n");
         }
     }
 

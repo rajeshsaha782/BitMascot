@@ -1,14 +1,12 @@
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 import service.ScrapeHelperService;
+import threads.Thread1;
+import threads.Thread2;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.*;
-import java.net.URL;
-import java.time.Duration;
-import java.time.Instant;
+import java.util.Date;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -19,14 +17,20 @@ import java.time.Instant;
 
 public class Main {
     public static void main(String[] args) {
-//        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-//        Task task1 = new Task ("Demo Task 1");
-//        Task task2 = new Task ("Demo Task 2");
-//        System.out.println("The time is : " + new Date());
-//
-//        ScheduledFuture<?> result = executor.scheduleAtFixedRate(task1, 15, 15, TimeUnit.SECONDS);
-//        ScheduledFuture<?> result2 = executor.scheduleAtFixedRate(task2, 20, 20, TimeUnit.SECONDS);
-//
+
+        String sourceUrl = "http://rss.cnn.com/rss/edition.rss";
+        String fetchDestinationPath = "E:/a.rss";
+        String imageDestinationPath = "E:/b.txt";
+
+        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+        Thread1 task1 = new Thread1 ("Fetch", sourceUrl, fetchDestinationPath);
+        Thread2 task2 = new Thread2 ("Image print", fetchDestinationPath, imageDestinationPath);
+        System.out.println("The time is : " + new Date());
+
+        ScheduledFuture<?> result = executor.scheduleAtFixedRate(task1, 0, 15, TimeUnit.SECONDS);
+        ScheduledFuture<?> result2 = executor.scheduleAtFixedRate(task2, 0, 20, TimeUnit.SECONDS);
+
+        // TO Fixed a Time
 //        try {
 //            TimeUnit.MINUTES.sleep(60);
 //        }
@@ -35,9 +39,9 @@ public class Main {
 //        }
 //        executor.shutdown();
 
-        ScrapeHelperService scrapeHelperService = ScrapeHelperService.getInstance();
-        scrapeHelperService.fetchRss();
-        scrapeHelperService.parseImageFromRss();
+//        ScrapeHelperService scrapeHelperService = ScrapeHelperService.getInstance();
+//        scrapeHelperService.fetchRss(sourceUrl, fetchDestinationPath);
+//        scrapeHelperService.parseImageFromRss(fetchDestinationPath, imageDestinationPath);
     }
 
 }
