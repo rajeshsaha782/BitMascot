@@ -1,6 +1,6 @@
 package threads;
 
-import service.ScrapeHelperService;
+import service.HelperService;
 
 import java.util.Date;
 
@@ -30,8 +30,8 @@ public class Thread2 implements Runnable {
     public void run() {
         try {
             System.out.println("Doing a task during : " + name + " - Time - " + new Date());
-            ScrapeHelperService scrapeHelperService = ScrapeHelperService.getInstance();
-            scrapeHelperService.parseImageFromRss(sourcePath, destinationPath);
+            HelperService helperService = HelperService.getInstance();
+            helperService.parseImageFromRss(sourcePath, destinationPath);
         } catch (Exception e) {
             e.printStackTrace();
         }
